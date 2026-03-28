@@ -142,6 +142,11 @@ def stratified_sa_v3(m, k=3, max_iter=500_000, T_start=5.0, T_end=0.001, seed=42
 
 
 
+
+
+
+
+
 class StatelessFSORouter:
     """
     Generalized FSO Router supporting arbitrary dimensions k.
@@ -156,34 +161,31 @@ class StatelessFSORouter:
         self.P = [list(range(k)) for _ in range(m)]
 
         if m % 2 != 0:
-            # Universal Spike for odd m (k=3 canonical)
-            for s in range(m):
-                if s == m - 2:
-                    if k >= 3: self.P[s][1], self.P[s][2] = 2, 1
-                    else: self.P[s][0], self.P[s][1] = 1, 0
-                elif s == m - 1:
-                    self.P[s][0], self.P[s][1] = 1, 0
+            # Universal Spike for odd m (canonical k=3)
+            if k == 3:
+                for s in range(m):
+                    if s == m - 2: self.P[s][1], self.P[s][2] = 2, 1
+                    elif s == m - 1: self.P[s][0], self.P[s][1] = 1, 0
+            else:
+                # Fallback to sum-stratified cycle closure for k != 3
+                for s in range(m):
+                    if s == m - 1: self.P[s][0], self.P[s][1] = 1, 0
         else:
             # Even m / Even k
             for s in range(m):
-                if s == m - 1:
-                    self.P[s][0], self.P[s][1] = 1, 0
+                if s == m - 1: self.P[s][0], self.P[s][1] = 1, 0
 
     def lookup(self, coords, color=0):
         s = sum(coords) % self.m
         p = list(self.P[s])
         j = coords[1] if self.k >= 2 else 0
 
-        # The Universal Spike: Apply symmetry break at j=0 for odd m
-        if self.m % 2 != 0 and j == 0 and s != self.m - 2:
-            if self.k >= 3:
-                # Value-based swap: 0 <-> 2
+        # The Universal Spike: Apply symmetry break at j=0
+        # Specifically tuned for m=odd, k=3
+        if self.m % 2 != 0 and self.k == 3:
+            if j == 0 and s != self.m - 2:
                 v0, v2 = p.index(0), p.index(2)
                 p[v0], p[v2] = 2, 0
-            else:
-                # k=2 case: 0 <-> 1
-                v0, v1 = p.index(0), p.index(1)
-                p[v0], p[v1] = 1, 0
 
         return p[color]
 
@@ -200,6 +202,11 @@ def closed_form_spike_rule(m, k=3):
         coords.reverse()
         sigma[idx] = [router.lookup(coords, c) for c in range(k)]
     return sigma
+
+
+
+
+
 
 
 
