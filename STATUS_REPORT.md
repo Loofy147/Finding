@@ -1,18 +1,21 @@
 # Project Status Report: SES Engine & Hamiltonian Decompositions
 
-## 1. New Results & Records
-- **P1-k4:** Best score 74 achieved in targeted SA runs.
-- **P2 Progress:** SA engine v3 achieved score 17 for m=6 in long solves.
-- **Dashboard Summary:** Full cross-referenced synthesis completed in DASHBOARD.md.
+## 1. Production Records
+- **P1-k4:** Best score 74.
+- **P2:** Best score 16 achieved in production runs.
+- **P3:** Best known score 17.
 
 ## 2. Theoretical Developments
-- **N_b(m) Closed Form:** $N_b(m) = m^{m-1} \cdot \varphi(m)$ verified for $m=2..7$.
-- **Torsor Count Resolution:** $648 = 162 \times 4$ confirmed.
-- **Shift Tuples:** $k>3$ shift tuples verified for odd $m \ge 5$.
+- **N_b(m) Formula:** $N_b(m) = m^{m-1} \cdot \varphi(m)$ (Verified $m=2..7$).
+- **Torsor Count:** $648 = 162 \times 4$ confirmed for $m=3, k=3$.
+- **Principle Translation:** Full translation of results into general software design principles in PRINCIPLES.md.
 
-## 3. Structural Insights
-- **Correct Metric:** Optimization now correctly uses `total_cycles_across_colors - k`.
-- **Spike Construction:** Confirmed that $\sigma$ must vary with at least 2 coordinates for long cycles.
+## 3. Toolset Progress
+- **Engine v3:** NumPy-accelerated SA engine with local successor updates and Basin Escape logic.
+- **Dashboard:** Comprehensive dashboard synthesizes and cross-references all results.
 
-## 4. Final Dashboard
-See DASHBOARD.md for the complete interactive synthesis.
+## 4. Final Documentation Suite
+- **README.md**: Central roadmap.
+- **THEORY.md**: Mathematical proofs.
+- **PRINCIPLES.md**: Actionable principles for software design.
+- **DASHBOARD.md**: Detailed result synthesis.

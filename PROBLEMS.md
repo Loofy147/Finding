@@ -2,20 +2,18 @@
 
 ## P1-k4: m=4, k=4
 - **Status:** Open.
-- **Current Score:** 300 (Dashboard run).
-- **Best Recorded Score:** 74 (Previous run).
+- **Best Score:** 74 (Basin Escape SA).
 - **Metric:** `total_cycles_across_colors - k`.
 - **Note:** k=4 even parity is arithmetically feasible, so H² parity obstruction doesn't block it.
 
 ## P2: m=6, k=3
 - **Status:** Open.
-- **Current Score:** 127 (Dashboard run).
-- **Best Recorded Score:** 17 (Previous run).
+- **Best Score:** 16 (SA v3 Final).
 - **Target:** Full convergence (score 0).
+- **Note:** Stalls around score 16-20 due to depth-3 barrier in $Z_2 \times Z_3$.
 
 ## P3: m=8, k=3
 - **Status:** Open.
-- **Current Score:** 375 (Dashboard run).
 - **Best Known Score:** 17.
 
 ## Scoring Metric
