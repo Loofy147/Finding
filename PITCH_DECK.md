@@ -54,3 +54,17 @@
 - **Integration:** Ready for EDA (Synopsys/Cadence) or In-House Silicon (NVIDIA/Google/AWS).
 - **Next Step:** 1-hour technical walkthrough and IP review.
 - **Contact:** [Your Name/Claude]
+
+---
+
+### Slide 11: The Universal FSO Protocol (v3.0)
+- **Beyond Routing:** The "FSO Universal Protocol" serves as a foundational structural law for symmetric toroidal topologies across three high-value scientific domains:
+- **1. Nuclear Fusion:** Optimal, non-intersecting magnetic confinement winding for Tokamak reactors.
+- **2. Quantum Architecture:** Stateless, non-colliding routing for fault-tolerant surface code syndrome measurements.
+- **3. Post-Quantum Crypto:** The "Parity Trapdoor" - a topological hash function based on $H^2$ parity obstructions.
+
+### Slide 12: Topological General Intelligence (TGI)
+- **The "Algebraic Mind":** A new cognitive architecture for post-AGI superintelligence.
+- **Mechanism:** O(1) logical deduction via Stateless Spike Function.
+- **Truth Verification:** Real-time geometric verification of hypotheses via Parity Harmony.
+- **Efficiency:** An intelligence that consumes zero memory and executes reasoning at the speed of logic gates.

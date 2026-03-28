@@ -153,6 +153,8 @@ def stratified_sa_v3(m, k=3, max_iter=500_000, T_start=5.0, T_end=0.001, seed=42
 
 
 
+
+
 class StatelessFSORouter:
     """
     Generalized FSO Router supporting arbitrary dimensions k.
@@ -166,24 +168,17 @@ class StatelessFSORouter:
 
         self.P = [list(range(k)) for _ in range(m)]
 
-        # Default r-vector for odd m
-        if r_vector is None:
-            if m % 2 != 0:
-                if k == 3:
-                    for s in range(m):
-                        if s == m - 2: self.P[s][1], self.P[s][2] = 2, 1
-                        elif s == m - 1: self.P[s][0], self.P[s][1] = 1, 0
-                else:
-                    for s in range(m):
-                        if s == m - 1: self.P[s][0], self.P[s][1] = 1, 0
+        if m % 2 != 0:
+            if k == 3:
+                for s in range(m):
+                    if s == m - 2: self.P[s][1], self.P[s][2] = 2, 1
+                    elif s == m - 1: self.P[s][0], self.P[s][1] = 1, 0
             else:
                 for s in range(m):
                     if s == m - 1: self.P[s][0], self.P[s][1] = 1, 0
         else:
-            # Custom r-vector generator (Experimental Universal Escape)
-            # This is not fully implemented for all m, k but demonstrates the principle.
-            # Using r-vector (1,1,5,5) for m=6, k=4 bypasses the H^2 obstruction.
-            pass
+            for s in range(m):
+                if s == m - 1: self.P[s][0], self.P[s][1] = 1, 0
 
     def lookup(self, coords, color=0):
         s = sum(coords) % self.m
@@ -211,6 +206,8 @@ def closed_form_spike_rule(m, k=3):
         coords.reverse()
         sigma[idx] = [router.lookup(coords, c) for c in range(k)]
     return sigma
+
+
 
 
 
