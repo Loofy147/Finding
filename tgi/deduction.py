@@ -8,18 +8,21 @@ class O1InferenceEngine:
     def __init__(self, m, k):
         self.m = m
         self.k = k
-        # Fiber-sum stratified permutations (v3.0 Universal Protocol)
+        if m % 2 == 0 and k % 2 != 0:
+            raise ValueError(f"Topological Obstruction: Grid size {m} (even) requires dimension {k} to be even.")
+
+        # Fiber-sum stratified permutations
         self.P = [list(range(k)) for _ in range(m)]
 
         if m % 2 != 0:
-            # Universal Spike for odd manifolds
             if k == 3:
                 self.P[m-2][1], self.P[m-2][2] = 2, 1
                 self.P[m-1][0], self.P[m-1][1] = 1, 0
-        else:
-            # Parity harmony closure for even manifolds (k=2, 4)
-            if k % 2 == 0:
+            else:
                 self.P[m-1][0], self.P[m-1][1] = 1, 0
+        else:
+            # Even m requires even k for Parity Harmony
+            self.P[m-1][0], self.P[m-1][1] = 1, 0
 
     def infer(self, current_concept, color=0):
         """
@@ -28,7 +31,7 @@ class O1InferenceEngine:
         s = sum(current_concept) % self.m
         p = list(self.P[s])
 
-        # Apply the Universal Spike (Topological anomaly)
+        # Apply the Universal Spike (Topological anomaly) for odd m, k=3
         if self.m % 2 != 0 and self.k == 3:
             j = current_concept[1]
             if j == 0 and s != self.m - 2:

@@ -1,32 +1,36 @@
 from tgi.mind import TopologicalGeneralIntelligence
 
-def run_tgi_oracle_demo():
+def run_tgi_advanced_demo():
     print("\n" + "="*80)
-    print("      TOPOLOGICAL GENERAL INTELLIGENCE (TGI) v1.0: THE ALGEBRAIC MIND")
+    print("      TOPOLOGICAL GENERAL INTELLIGENCE (TGI) v1.1: THE SYMBOLIC MIND")
     print("="*80)
 
-    # SCENARIO 1: THE PARADOXICAL HYPOTHESIS
-    # m=4 (even), k=3 (odd)
-    # Statistical AI might guess a conclusion, but TGI detects the H^2 obstruction.
-    tgi_obs = TopologicalGeneralIntelligence(4, 3)
-    tgi_obs.process_hypothesis((0,0,0))
+    # SCENARIO 1: THE LIAR PARADOX (Topological Obstruction)
+    # Mapping logical states to Z_4^3 (Even m, Odd k)
+    print("\n[SCENARIO 1] Investigating the 'Liar Paradox' in an Obstructed Manifold.")
+    tgi_liar = TopologicalGeneralIntelligence(4, 3)
+    tgi_liar.mapper.map_concept("Liar: 'This statement is false'", (0, 0, 0))
+    tgi_liar.process_hypothesis("Liar: 'This statement is false'")
 
-    # SCENARIO 2: THE HARMONIOUS TRUTH
-    # m=3, k=3
-    # Logical chain perfectly reconstructs to the origin.
-    tgi_har = TopologicalGeneralIntelligence(3, 3)
-    tgi_har.process_hypothesis((0,0,0))
+    # SCENARIO 2: THE SYMBOLIC TRUTH (Z_3^3)
+    # Mapping symbols to coordinates
+    print("\n[SCENARIO 2] Verifying Symbolic Harmony in a 3D Manifold.")
+    tgi_sym = TopologicalGeneralIntelligence(3, 3)
+    tgi_sym.mapper.map_concept("Universal Ethics", (0, 0, 0))
+    tgi_sym.mapper.map_concept("Logical Law", (1, 1, 1))
 
-    # SCENARIO 3: HYPER-DIMENSIONAL REASONING
-    # m=4, k=2
-    # TGI proves consistency in manifolds where dimensionality and parity align.
+    tgi_sym.process_hypothesis("Universal Ethics")
+
+    # SCENARIO 3: HYPER-DIMENSIONAL REASONING (Z_4^2)
+    print("\n[SCENARIO 3] Resolving Logic in a Parity-Aligned 2D Manifold.")
     tgi_hyper = TopologicalGeneralIntelligence(4, 2)
-    tgi_hyper.process_hypothesis((0,0))
+    tgi_hyper.mapper.map_concept("Temporal Root", (0,0))
+    tgi_hyper.process_hypothesis("Temporal Root")
 
     print("\n" + "="*80)
-    print("CONCLUSION: TGI replaces probabilistic inference with geometric certainty.")
-    print("The Algebraic Mind identifies Truth as a closed Hamiltonian loop.")
+    print("CONCLUSION: TGI maps symbolic logic to topological invariants.")
+    print("Paradoxes are seen as Parity Obstructions; Truths as Hamiltonian Loops.")
     print("="*80 + "\n")
 
 if __name__ == "__main__":
-    run_tgi_oracle_demo()
+    run_tgi_advanced_demo()

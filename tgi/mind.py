@@ -2,6 +2,28 @@ from .core import CognitiveManifold
 from .deduction import O1InferenceEngine
 from .verification import TruthOracle
 
+class SymbolicMapper:
+    """
+    Translates between symbolic concepts and manifold coordinates.
+    """
+    def __init__(self, m, k):
+        self.m = m
+        self.k = k
+        self.concept_to_coord = {}
+        self.coord_to_concept = {}
+
+    def map_concept(self, concept_name, coords):
+        if len(coords) != self.k:
+            raise ValueError(f"Coords must have length {self.k}")
+        self.concept_to_coord[concept_name] = tuple(coords)
+        self.coord_to_concept[tuple(coords)] = concept_name
+
+    def get_coord(self, concept_name):
+        return self.concept_to_coord.get(concept_name)
+
+    def get_concept(self, coord):
+        return self.coord_to_concept.get(tuple(coord), f"Node{coord}")
+
 class TopologicalGeneralIntelligence:
     """
     The primary TGI class (The Algebraic Mind).
@@ -11,23 +33,44 @@ class TopologicalGeneralIntelligence:
         self.m = m
         self.k = k
         self.manifold = CognitiveManifold(m, k)
-        self.engine = O1InferenceEngine(m, k)
+        try:
+            self.engine = O1InferenceEngine(m, k)
+            self.obstructed = False
+        except ValueError as e:
+            self.engine = None
+            self.obstructed = True
+            self.obstruction_msg = str(e)
         self.oracle = TruthOracle(m, k)
+        self.mapper = SymbolicMapper(m, k)
 
     def process_hypothesis(self, premise, verbose=True):
         """
         Processes a logical hypothesis by generating a reasoning chain
         and verifying its geometric consistency.
         """
+        premise_coord = premise
+        if isinstance(premise, str):
+            premise_coord = self.mapper.get_coord(premise)
+            if premise_coord is None:
+                raise ValueError(f"Concept '{premise}' not mapped.")
+
         if verbose:
             print(f"\n[TGI MIND] Processing Hypothesis: Z_{self.m}^{self.k}")
-            print(f" - Initial Premise: {premise}")
+            concept_name = self.mapper.get_concept(premise_coord)
+            print(f" - Initial Premise: {concept_name} {premise_coord}")
 
         # 1. Deductive Reasoning (O(1) Jumps)
-        chain = self.engine.reason(premise)
-
-        # 2. Geometric Verification
-        report = self.oracle.evaluate_consistency(chain)
+        if self.obstructed:
+            report = {
+                "status": "PARADOX_DETECTED",
+                "proof": self.obstruction_msg,
+                "valid": False
+            }
+            chain = [premise_coord]
+        else:
+            chain = self.engine.reason(premise_coord)
+            # 2. Geometric Verification
+            report = self.oracle.evaluate_consistency(chain)
 
         if verbose:
             print(f" - Reasoning Chain Length: {len(chain)}")
