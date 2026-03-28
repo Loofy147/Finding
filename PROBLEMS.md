@@ -24,3 +24,10 @@ A score of 0 indicates that each of the $k$ colors forms a single Hamiltonian cy
 Existence of a stateless, fiber-stratified Hamiltonian routing on $\mathbb{Z}_m^k$ requires:
 $$m \equiv k \pmod 2 	ext{ if } m 	ext{ is even.}$$
 If $m$ is odd, all dimensions $k$ are reachable.
+
+---
+
+## The Resolved $k=4$ Universal Escape
+For any even grid size $m$, a stateless Hamiltonian decomposition is mathematically guaranteed in $k=4$ dimensions.
+- **The Construction:** Selecting an $r$-quadruple $(r_0, r_1, r_2, r_3)$ such that $\sum r_i = 2m$ and $\gcd(r_i, m) = 1$.
+- **Example for $m=6$:** The quadruple $(1, 1, 5, 5)$ satisfies these conditions and closes into a single cycle of length $6^4$.
