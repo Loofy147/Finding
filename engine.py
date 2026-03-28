@@ -36,59 +36,15 @@ def score_np(succ, n, k):
     return total_cycles - k
 
 # ============================================================
-# SEARCH ENGINES
+# BASIN ESCAPE SA (BASIN HOPPING)
 # ============================================================
-def fast_sa(m, k=3, max_iter=500_000, T_start=5.0, T_end=0.001, seed=42):
-    random.seed(seed)
-    np.random.seed(seed)
-    n = m**k
-    perms = list(itertools.permutations(range(k)))
-    n_perms = len(perms)
-    perms_np = np.array(perms, dtype=np.int32)
-    strides = np.array([m**(k-1-d) for d in range(k)], dtype=np.int32)
-    perm_idx = np.zeros(n, dtype=np.int32)
-    for i in range(n): perm_idx[i] = random.randrange(n_perms)
-    perm_arr = perms_np[perm_idx]
-    succ = build_succ_np(perm_arr, m, k)
-    curr_score = score_np(succ, n, k)
-    best_score = curr_score
-    best_perm = perm_arr.copy()
-    cooling = (T_end / T_start) ** (1.0 / max_iter)
-    T = T_start
-    t0 = time.perf_counter()
-    coords = np.zeros((n, k), dtype=np.int32)
-    for i in range(n):
-        temp = i
-        for d in reversed(range(k)):
-            coords[i, d] = temp % m
-            temp //= m
-    for it in range(1, max_iter + 1):
-        v_idx = random.randrange(n)
-        old_pidx = perm_idx[v_idx]
-        new_pidx = random.randrange(n_perms - 1)
-        if new_pidx >= old_pidx: new_pidx += 1
-        old_succ_row = succ[v_idx].copy()
-        new_p = perms[new_pidx]
-        for c in range(k):
-            dim = new_p[c]
-            old_coord = coords[v_idx, dim]
-            succ[v_idx, c] = v_idx - (old_coord * strides[dim]) + ((old_coord + 1) % m) * strides[dim]
-        s = score_np(succ, n, k)
-        delta = s - curr_score
-        if delta <= 0 or (T > 1e-9 and random.random() < math.exp(-delta / T)):
-            curr_score = s
-            perm_idx[v_idx] = new_pidx
-            if s < best_score:
-                best_score = s
-                best_perm = perms_np[perm_idx].copy()
-                if best_score == 0: break
-        else:
-            succ[v_idx] = old_succ_row
-        T *= cooling
-    elapsed = time.perf_counter() - t0
-    return best_perm, best_score, elapsed
-
-def stratified_sa(m, k=3, max_iter=500_000, T_start=5.0, T_end=0.001, seed=42):
+def stratified_sa_v3(m, k=3, max_iter=500_000, T_start=5.0, T_end=0.001, seed=42,
+                      basin_step=1000, escape_iter=100):
+    """
+    Stratified SA with Basin Escape logic.
+    basin_step: every X iterations, try a 'long jump' to escape local minima.
+    escape_iter: number of random swaps in a jump.
+    """
     random.seed(seed)
     np.random.seed(seed)
     n = m**k
@@ -122,6 +78,7 @@ def stratified_sa(m, k=3, max_iter=500_000, T_start=5.0, T_end=0.001, seed=42):
                 succ[v_idx, c] = v_idx - (old_coord * strides[dim]) + ((old_coord + 1) % m) * strides[dim]
 
     succ = np.zeros((n, k), dtype=np.int32)
+    # Init all
     for s in range(m):
         for j in range(m):
             if k == 3: update_succ(get_v_indices((s, j)), table_idx[s, j], succ)
@@ -134,7 +91,30 @@ def stratified_sa(m, k=3, max_iter=500_000, T_start=5.0, T_end=0.001, seed=42):
     cooling = (T_end / T_start) ** (1.0 / max_iter)
     T = T_start
     t0 = time.perf_counter()
+
     for it in range(1, max_iter + 1):
+        # Basin Escape Jump
+        if it % basin_step == 0:
+            jump_table = table_idx.copy()
+            jump_succ = succ.copy()
+            for _ in range(escape_iter):
+                if k == 3: idxs = (random.randrange(m), random.randrange(m))
+                else: idxs = (random.randrange(m), random.randrange(m), random.randrange(m))
+                new_p = random.randrange(n_perms)
+                jump_table[idxs] = new_p
+                update_succ(get_v_indices(idxs), new_p, jump_succ)
+
+            s_jump = score_np(jump_succ, n, k)
+            if s_jump <= curr_score or random.random() < math.exp(-(s_jump - curr_score) / T):
+                curr_score = s_jump
+                table_idx = jump_table
+                succ = jump_succ
+                if s_jump < best_score:
+                    best_score = s_jump
+                    best_table = table_idx.copy()
+                    if best_score == 0: break
+
+        # Local Move
         if k == 3: idxs = (random.randrange(m), random.randrange(m))
         else: idxs = (random.randrange(m), random.randrange(m), random.randrange(m))
         old_pidx = table_idx[idxs]
@@ -144,6 +124,7 @@ def stratified_sa(m, k=3, max_iter=500_000, T_start=5.0, T_end=0.001, seed=42):
         old_succ_rows = succ[affected_v].copy()
         table_idx[idxs] = new_pidx
         update_succ(affected_v, table_idx[idxs], succ)
+
         s = score_np(succ, n, k)
         delta = s - curr_score
         if delta <= 0 or (T > 1e-9 and random.random() < math.exp(-delta / T)):
@@ -156,6 +137,7 @@ def stratified_sa(m, k=3, max_iter=500_000, T_start=5.0, T_end=0.001, seed=42):
             table_idx[idxs] = old_pidx
             succ[affected_v] = old_succ_rows
         T *= cooling
+
     elapsed = time.perf_counter() - t0
     final_perm_arr = np.zeros((n, k), dtype=np.int32)
     for i in range(n):
@@ -164,12 +146,12 @@ def stratified_sa(m, k=3, max_iter=500_000, T_start=5.0, T_end=0.001, seed=42):
     return final_perm_arr, best_score, elapsed
 
 # ============================================================
-# CLOSED-FORM UNIVERSAL SPIKE RULE (Theorem 7.1)
+# UNIVERSAL SPIKE RULE (Theorem 7.1)
 # ============================================================
 def closed_form_spike_rule(m):
     """
     Universal O(m) construction for all odd m >= 3.
-    See THEORY.md Section 5 for details.
+    See FOUNDATIONS.md Section II.1 for details.
     """
     if m % 2 == 0: raise ValueError("Spike rule requires odd m.")
     n = m**3
