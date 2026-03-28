@@ -1,6 +1,7 @@
 from .core import CognitiveManifold
 from .deduction import O1InferenceEngine
 from .verification import TruthOracle
+from .grounding import KnowledgeGrounding
 
 class SymbolicMapper:
     """
@@ -29,7 +30,7 @@ class TopologicalGeneralIntelligence:
     The primary TGI class (The Algebraic Mind).
     Orchestrates O(1) deduction and geometric truth verification.
     """
-    def __init__(self, m, k):
+    def __init__(self, m, k, hf_token=None):
         self.m = m
         self.k = k
         self.manifold = CognitiveManifold(m, k)
@@ -42,6 +43,7 @@ class TopologicalGeneralIntelligence:
             self.obstruction_msg = str(e)
         self.oracle = TruthOracle(m, k)
         self.mapper = SymbolicMapper(m, k)
+        self.grounding = KnowledgeGrounding(token=hf_token)
 
     def process_hypothesis(self, premise, verbose=True):
         """
@@ -52,7 +54,9 @@ class TopologicalGeneralIntelligence:
         if isinstance(premise, str):
             premise_coord = self.mapper.get_coord(premise)
             if premise_coord is None:
-                raise ValueError(f"Concept '{premise}' not mapped.")
+                # Use grounding if concept is not in the mapper
+                premise_coord = self.grounding.ground_to_manifold(premise, self.m, self.k)
+                self.mapper.map_concept(premise, premise_coord)
 
         if verbose:
             print(f"\n[TGI MIND] Processing Hypothesis: Z_{self.m}^{self.k}")
@@ -81,6 +85,18 @@ class TopologicalGeneralIntelligence:
             "chain": chain,
             "report": report
         }
+
+    def ground_and_process(self, natural_language_query):
+        """
+        Neuro-Symbolic Pipeline:
+        1. LLM Extraction (Mocked)
+        2. Grounding to Manifold
+        3. FSO Verification
+        """
+        concepts = self.grounding.extract_concepts(natural_language_query)
+        # We use the main concept for the premise
+        premise = concepts[0]
+        return self.process_hypothesis(premise)
 
     def solve_np_hard_logic(self, problem_input):
         """
