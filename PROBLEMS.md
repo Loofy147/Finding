@@ -1,19 +1,21 @@
 # Open Problems in Hamiltonian Decomposition of Cayley Graphs
 
 ## P1-k4: m=4, k=4
-- **Status:** New record achieved.
-- **Best Score:** 74 (Previous best: 84).
+- **Status:** Open.
+- **Current Score:** 300 (Dashboard run).
+- **Best Recorded Score:** 74 (Previous run).
 - **Metric:** `total_cycles_across_colors - k`.
-- **Note:** k=4 even parity is arithmetically feasible (four odd shifts can sum to an even number), so H² parity obstruction doesn't block it.
+- **Note:** k=4 even parity is arithmetically feasible, so H² parity obstruction doesn't block it.
 
 ## P2: m=6, k=3
-- **Status:** Nearest to closing.
-- **Best Known Score:** 7.
-- **Current Largest Cycles:** 115 and 57 out of 216.
-- **Target:** Full convergence (score 0) with 500k+ iterations.
+- **Status:** Open.
+- **Current Score:** 127 (Dashboard run).
+- **Best Recorded Score:** 17 (Previous run).
+- **Target:** Full convergence (score 0).
 
 ## P3: m=8, k=3
 - **Status:** Open.
+- **Current Score:** 375 (Dashboard run).
 - **Best Known Score:** 17.
 
 ## Scoring Metric
