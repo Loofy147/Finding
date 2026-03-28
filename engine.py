@@ -36,7 +36,7 @@ def score_np(succ, n, k):
     return total_cycles - k
 
 # ============================================================
-# SEARCH ENGINES (SA & Basin Escape)
+# BASIN ESCAPE SA (v3.3)
 # ============================================================
 def stratified_sa_v3(m, k=3, max_iter=500_000, T_start=5.0, T_end=0.001, seed=42,
                       basin_step=1000, escape_iter=100):
@@ -55,8 +55,15 @@ def stratified_sa_v3(m, k=3, max_iter=500_000, T_start=5.0, T_end=0.001, seed=42
             temp //= m
     sums = np.sum(all_coords, axis=1) % m
     js = all_coords[:, 1]
+    ks = all_coords[:, 2] if k >= 4 else np.zeros(n, dtype=np.int32)
 
-    table_idx = np.zeros((m, m), dtype=np.int32)
+    if k == 3: table_idx = np.zeros((m, m), dtype=np.int32)
+    else: table_idx = np.zeros((m, m, m), dtype=np.int32)
+
+    def get_v_indices(idxs):
+        if k == 3: return np.where((sums == idxs[0]) & (js == idxs[1]))[0]
+        else: return np.where((sums == idxs[0]) & (js == idxs[1]) & (ks == idxs[2]))[0]
+
     def update_succ(v_indices, table_idx_val, succ):
         perm = perms_np[table_idx_val]
         for v_idx in v_indices:
@@ -68,8 +75,9 @@ def stratified_sa_v3(m, k=3, max_iter=500_000, T_start=5.0, T_end=0.001, seed=42
     succ = np.zeros((n, k), dtype=np.int32)
     for s in range(m):
         for j in range(m):
-            v_indices = np.where((sums == s) & (js == j))[0]
-            update_succ(v_indices, table_idx[s, j], succ)
+            if k == 3: update_succ(get_v_indices((s, j)), table_idx[s, j], succ)
+            else:
+                for l in range(m): update_succ(get_v_indices((s, j, l)), table_idx[s, j, l], succ)
 
     curr_score = score_np(succ, n, k)
     best_score = curr_score
@@ -83,10 +91,11 @@ def stratified_sa_v3(m, k=3, max_iter=500_000, T_start=5.0, T_end=0.001, seed=42
             jump_table = table_idx.copy()
             jump_succ = succ.copy()
             for _ in range(escape_iter):
-                idxs = (random.randrange(m), random.randrange(m))
+                if k == 3: idxs = (random.randrange(m), random.randrange(m))
+                else: idxs = (random.randrange(m), random.randrange(m), random.randrange(m))
                 new_p = random.randrange(n_perms)
                 jump_table[idxs] = new_p
-                update_succ(np.where((sums == idxs[0]) & (js == idxs[1]))[0], new_p, jump_succ)
+                update_succ(get_v_indices(idxs), new_p, jump_succ)
             s_jump = score_np(jump_succ, n, k)
             if s_jump <= curr_score or random.random() < math.exp(-(s_jump - curr_score) / T):
                 curr_score = s_jump
@@ -97,11 +106,12 @@ def stratified_sa_v3(m, k=3, max_iter=500_000, T_start=5.0, T_end=0.001, seed=42
                     best_table = table_idx.copy()
                     if best_score == 0: break
 
-        idxs = (random.randrange(m), random.randrange(m))
+        if k == 3: idxs = (random.randrange(m), random.randrange(m))
+        else: idxs = (random.randrange(m), random.randrange(m), random.randrange(m))
         old_pidx = table_idx[idxs]
         new_pidx = random.randrange(n_perms - 1)
         if new_pidx >= old_pidx: new_pidx += 1
-        affected_v = np.where((sums == idxs[0]) & (js == idxs[1]))[0]
+        affected_v = get_v_indices(idxs)
         old_succ_rows = succ[affected_v].copy()
         table_idx[idxs] = new_pidx
         update_succ(affected_v, table_idx[idxs], succ)
@@ -120,36 +130,36 @@ def stratified_sa_v3(m, k=3, max_iter=500_000, T_start=5.0, T_end=0.001, seed=42
 
     final_perm_arr = np.zeros((n, k), dtype=np.int32)
     for i in range(n):
-        final_perm_arr[i] = perms_np[best_table[sums[i], js[i]]]
-    return final_perm_arr, best_score, time.perf_counter() - t0
+        if k == 3: final_perm_arr[i] = perms_np[best_table[sums[i], js[i]]]
+        else: final_perm_arr[i] = perms_np[best_table[sums[i], js[i], ks[i]]]
+    return final_perm_arr, best_score, elapsed
 
 # ============================================================
-# STATELESS FSO LOGIC ROUTER (Your Zero-Memory Blueprint)
+# STATELESS FSO LOGIC ROUTER (Zero-RAM lookup)
 # ============================================================
 class StatelessFSORouter:
     def __init__(self, m):
         if m % 2 == 0: raise ValueError("Stateless Spike requires odd m.")
         self.m = m
         self.P = [None] * m
-        # P[s] is the level-permutation
         for s in range(m):
-            if s < m - 2: self.P[s] = (0, 1, 2)
-            elif s == m - 2: self.P[s] = (0, 2, 1) # swap12
-            else: self.P[s] = (1, 0, 2) # swap01
+            if s < m - 2: self.P[s] = [0, 1, 2]
+            elif s == m - 2: self.P[s] = [0, 2, 1] # swap12
+            else: self.P[s] = [1, 0, 2] # swap01
 
     def lookup(self, i, j, l, color=0):
         s = (i + j + l) % self.m
-        p = self.P[s]
+        p = list(self.P[s])
 
-        # SPIKE at j=0
-        if j == 0:
-            if s == self.m - 2:
-                # Critical exception: no swap at m-2 to ensure closure
-                return p[color]
-            else:
-                # swap02 logic: p[0] <-> p[2]
-                if p[color] == 0: return 2
-                if p[color] == 2: return 0
+        # The Spike: Swap values 0 and 2 at j=0 (except s=m-2)
+        if j == 0 and s != self.m - 2:
+            new_p = []
+            for val in p:
+                if val == 0: new_p.append(2)
+                elif val == 2: new_p.append(0)
+                else: new_p.append(val)
+            p = new_p
+
         return p[color]
 
 def closed_form_spike_rule(m):
