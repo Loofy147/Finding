@@ -15,31 +15,32 @@ class TruthOracle:
         It is FALSE (Paradoxical) if it hits a topological obstruction.
         """
         if self.m % 2 == 0 and self.k % 2 != 0:
-            return {
+             return {
                 "status": "PARADOX_DETECTED",
                 "proof": "H^2 Parity Obstruction: Grid size even, dimension odd. Sum of odd residues cannot be even.",
                 "valid": False
             }
 
-        # Verify Hamiltonian closure
+        n = self.m ** self.k
         start = logic_chain[0]
         end = logic_chain[-1]
+        length = len(logic_chain) - 1 # exclude start as end
 
-        if start == end and len(logic_chain) == (self.m ** self.k) + 1:
+        if start == end and length == n:
              return {
                 "status": "ABSOLUTE_TRUTH",
-                "proof": "Hamiltonian Cycle Closure: Logic is perfectly consistent and complete.",
+                "proof": f"Hamiltonian Cycle Closure: Logic is perfectly consistent and covers all {n} states.",
                 "valid": True
             }
         elif start == end:
              return {
                 "status": "LOCAL_CONSISTENCY",
-                "proof": "Cycle closed but is sub-Hamiltonian (incomplete).",
+                "proof": f"Cycle closed but is sub-Hamiltonian ({length}/{n} states). Truth is local, not universal.",
                 "valid": True
             }
         else:
              return {
                 "status": "OPEN_INFERENCE",
-                "proof": "Logical chain remains open.",
+                "proof": f"Logical chain remains open after {length} steps.",
                 "valid": True
             }
