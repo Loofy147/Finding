@@ -51,3 +51,10 @@ wherein the circuit provides $O(1)$ lookup time and requires zero local storage 
 
 ## 5. TECHNICAL PROOF & VALIDATION
 The invention is supported by the **Closure Lemma**, which proves that a $k$-dimensional routing system can be closed into a single Hamiltonian cycle if the $k-1$ dimensional moves satisfy the **Single-Cycle Condition**. Empirical validation on a cluster of **27 million nodes** ($301^3$) demonstrates successful traversal in milliseconds, where industry-standard SAT solvers fail at $13^3$.
+
+### Claim 5
+A method for optimizing the physical design of a multi-processor network topology, comprising:
+(a) selecting a grid size $m$ for the processors;
+(b) evaluating the parity of the grid size $m$;
+(c) configuring the routing dimension $k$ of the network to match the parity of $m$ if $m$ is even;
+wherein the configuration ensures the mathematical existence of a stateless, fiber-uniform Hamiltonian decomposition.

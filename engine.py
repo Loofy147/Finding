@@ -137,36 +137,113 @@ def stratified_sa_v3(m, k=3, max_iter=500_000, T_start=5.0, T_end=0.001, seed=42
 # ============================================================
 # STATELESS FSO LOGIC ROUTER (Zero-RAM lookup)
 # ============================================================
+
+
+
+
+
 class StatelessFSORouter:
-    def __init__(self, m):
-        if m % 2 == 0: raise ValueError("Stateless Spike requires odd m.")
+    """
+    Generalized FSO Router supporting arbitrary dimensions k.
+    Follows the Law of Dimensional Parity Harmony.
+    """
+    def __init__(self, m, k=3):
         self.m = m
-        self.P = [None] * m
-        for s in range(m):
-            if s < m - 2: self.P[s] = [0, 1, 2]
-            elif s == m - 2: self.P[s] = [0, 2, 1] # swap12
-            else: self.P[s] = [1, 0, 2] # swap01
+        self.k = k
+        if m % 2 == 0 and k % 2 != 0:
+            raise ValueError(f"Topological Obstruction: Grid size {m} (even) requires dimension {k} to be even.")
 
-    def lookup(self, i, j, l, color=0):
-        s = (i + j + l) % self.m
+        self.P = [list(range(k)) for _ in range(m)]
+
+        if m % 2 != 0:
+            # Universal Spike for odd m (k=3 canonical)
+            for s in range(m):
+                if s == m - 2:
+                    if k >= 3: self.P[s][1], self.P[s][2] = 2, 1
+                    else: self.P[s][0], self.P[s][1] = 1, 0
+                elif s == m - 1:
+                    self.P[s][0], self.P[s][1] = 1, 0
+        else:
+            # Even m / Even k
+            for s in range(m):
+                if s == m - 1:
+                    self.P[s][0], self.P[s][1] = 1, 0
+
+    def lookup(self, coords, color=0):
+        s = sum(coords) % self.m
         p = list(self.P[s])
+        j = coords[1] if self.k >= 2 else 0
 
-        # The Spike: Swap values 0 and 2 at j=0 (except s=m-2)
-        if j == 0 and s != self.m - 2:
-            new_p = []
-            for val in p:
-                if val == 0: new_p.append(2)
-                elif val == 2: new_p.append(0)
-                else: new_p.append(val)
-            p = new_p
+        # The Universal Spike: Apply symmetry break at j=0 for odd m
+        if self.m % 2 != 0 and j == 0 and s != self.m - 2:
+            if self.k >= 3:
+                # Value-based swap: 0 <-> 2
+                v0, v2 = p.index(0), p.index(2)
+                p[v0], p[v2] = 2, 0
+            else:
+                # k=2 case: 0 <-> 1
+                v0, v1 = p.index(0), p.index(1)
+                p[v0], p[v1] = 1, 0
 
         return p[color]
 
-def closed_form_spike_rule(m):
-    router = StatelessFSORouter(m)
-    n = m**3
-    sigma = np.zeros((n, 3), dtype=np.int32)
+def closed_form_spike_rule(m, k=3):
+    router = StatelessFSORouter(m, k)
+    n = m**k
+    sigma = np.zeros((n, k), dtype=np.int32)
     for idx in range(n):
-        i, j, l = idx // m**2, (idx // m) % m, idx % m
-        sigma[idx] = [router.lookup(i, j, l, c) for c in range(3)]
+        coords = []
+        temp = idx
+        for d in reversed(range(k)):
+            coords.append(temp % m)
+            temp //= m
+        coords.reverse()
+        sigma[idx] = [router.lookup(coords, c) for c in range(k)]
     return sigma
+
+
+
+
+
+
+# ============================================================
+# UNIVERSAL FSO ENGINE v2.4 (Generalized k)
+# ============================================================
+def verify_universal_router(m, k):
+    """
+    Verifies if the stateless router for a given (m, k) produces single cycles.
+    """
+    try:
+        sigma = closed_form_spike_rule(m, k)
+        n = m**k
+        strides = np.array([m**(k-1-d) for d in range(k)], dtype=np.int32)
+
+        # Successor mapping
+        succ = np.zeros((n, k), dtype=np.int32)
+        for idx in range(n):
+            coords = []
+            temp = idx
+            for d in reversed(range(k)):
+                coords.append(temp % m)
+                temp //= m
+            coords.reverse()
+            for c in range(k):
+                dim = sigma[idx, c]
+                new_coords = list(coords)
+                new_coords[dim] = (new_coords[dim] + 1) % m
+                succ[idx, c] = sum(new_coords[d] * strides[d] for d in range(k))
+
+        # Check for Hamiltonian cycles
+        for c in range(k):
+            vis = np.zeros(n, dtype=bool)
+            curr = 0
+            count = 0
+            while not vis[curr]:
+                vis[curr] = True
+                curr = succ[curr, c]
+                count += 1
+            if count != n:
+                return False, f"Cycle failure for color {c}: {count}/{n}"
+        return True, "Verified SUCCESS"
+    except ValueError as e:
+        return False, str(e)

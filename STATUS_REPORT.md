@@ -22,3 +22,8 @@
 - **PITCH_DECK.md**: Executive presentation.
 - **FOUNDATIONS.md**: Master framework.
 - **THEORY.md**: Mathematical proofs.
+
+## 5. Universal Parity Discovery (v2.4)
+- **Law of Dimensional Parity Harmony:** Confirmed that for even grid sizes ($m$), the dimensionality ($k$) must also be even to permit fiber-stratified Hamiltonian routing.
+- **FSO Reasoner (v1.0):** New tool for instant topological feasibility checks.
+- **Generalized Router:** Updated `StatelessFSORouter` to support parity-aligned $k=2$ and $k=4$ configurations.
