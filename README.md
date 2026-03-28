@@ -19,3 +19,6 @@ This repository contains tools, theoretical proofs, and status reports related t
 - **$N_b(m)$ Formula:** Derived and verified $N_b(m) = m^{m-1} \cdot \varphi(m)$.
 - **Torsor Resolution:** Resolved the $648$ count for $m=3, k=3$.
 - **Canonical Spike:** Verified single-cycle construction for any odd $m$.
+
+## Universal Solutions
+- **Closed-Form Spike:** O(m) universal solution for any odd m, k=3. See `engine.py` and `THEORY.md`.

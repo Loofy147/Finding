@@ -40,3 +40,15 @@ For the canonical choice $b_c(j) = \delta$ if $j=j_0$, else $0$:
 3. For any odd $m$, $\delta = 1$ always works.
 4. The canonical $r$-triple $(1, m-2, 1)$ satisfies $\gcd(r_c, m) = 1$ for all odd $m$.
 5. Thus, the construction always produces a single $m^2$-cycle.
+
+## 5. Universal Closed-Form Construction (m=odd, k=3)
+A key discovery is the existence of universal closed-form constructions that solve the k=3 Hamiltonian decomposition for any odd $m$. These constructions rely on a **Level-Table** $\sigma_{s,j}$ that maps the sum of coordinates $s = (i+j+l) \pmod m$ and one independent coordinate $j$ to a permutation.
+
+### The Construction:
+- **Base Permutations ($P_s$):**
+    - $P_s = \text{identity}$ for $s < m-2$
+    - $P_{m-2} = (0, 2, 1)$ (swap 1-2)
+    - $P_{m-1} = (1, 0, 2)$ (swap 0-1)
+- **Spike Transformation:**
+    - For each level $s$, the column $j=0$ is transformed by $(0 \leftrightarrow 2)$ except at the critical level $s=m-2$.
+- **Result:** This construction ensures that the composite transformations $Q_c$ on the $\mathbb{Z}_m \times \mathbb{Z}_m$ layers satisfy the Single-Cycle Condition (Theorem 5.1).

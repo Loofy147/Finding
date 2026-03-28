@@ -2,34 +2,55 @@ import itertools
 from math import gcd
 import numpy as np
 
-def is_single_cycle(Q, m):
-    """Checks if a transformation Q on Z_m x Z_m is a single cycle of length m^2."""
-    n = m * m
-    vis = set()
-    cur = (0, 0)
-    while cur not in vis:
-        vis.add(cur)
-        cur = Q[cur]
-    return len(vis) == n
+def verify_sigma(sigma, m):
+    """
+    Verifies if the given vertex-indexed permutation array (sigma)
+    results in k Hamiltonian cycles on the Cayley graph Z_m^k.
+    """
+    n = sigma.shape[0]
+    k = sigma.shape[1]
+    strides = np.array([m**(k-1-d) for d in range(k)], dtype=np.int32)
 
-def make_canonical_spike_Q(m, r, delta=1, v=0, j0=0):
-    """Returns the transformation Q(i,j) = (i + b(j), j + r) mod m."""
-    Q = {}
+    # Build successors
+    succ = np.zeros((n, k), dtype=np.int32)
+    for idx in range(n):
+        coords = []
+        temp = idx
+        for d in reversed(range(k)):
+            coords.append(temp % m)
+            temp //= m
+        coords.reverse()
+
+        for c in range(k):
+            dim = sigma[idx, c]
+            new_coords = list(coords)
+            new_coords[dim] = (new_coords[dim] + 1) % m
+            new_idx = sum(new_coords[d] * strides[d] for d in range(k))
+            succ[idx, c] = new_idx
+
+    # Check for single cycles
+    for c in range(k):
+        vis = np.zeros(n, dtype=bool)
+        curr = 0
+        count = 0
+        while not vis[curr]:
+            vis[curr] = True
+            curr = succ[curr, c]
+            count += 1
+        if count != n:
+            return False, c, count
+    return True, None, n
+
+def table_to_sigma(table, m):
+    """
+    Converts a level-table (s, j) -> permutation into a vertex-indexed array.
+    """
+    n = m**3
+    sigma = np.zeros((n, 3), dtype=np.int32)
     for i in range(m):
         for j in range(m):
-            b = (v + delta) if j == j0 else v
-            Q[(i, j)] = ((i + b) % m, (j + r) % m)
-    return Q
-
-def verify_canonical_spike(m):
-    """Verifies Theorem 7.1: Canonical r=(1, m-2, 1) and delta=1 yield single cycles."""
-    r_triple = (1, m - 2, 1)
-    results = []
-    for r in r_triple:
-        Q = make_canonical_spike_Q(m, r, delta=1)
-        results.append(is_single_cycle(Q, m))
-    return all(results)
-
-if __name__ == "__main__":
-    for m in [3, 5, 7, 9]:
-        print(f"m={m}: Canonical Spike Verified = {verify_canonical_spike(m)}")
+            for l in range(m):
+                idx = i*m**2 + j*m + l
+                s = (i + j + l) % m
+                sigma[idx] = table[s][j]
+    return sigma

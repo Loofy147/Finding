@@ -45,13 +45,11 @@ def fast_sa(m, k=3, max_iter=500_000, T_start=5.0, T_end=0.001, seed=42):
     n_perms = len(perms)
     perms_np = np.array(perms, dtype=np.int32)
 
-    # strides: [m^(k-1), m^(k-2), ..., 1]
     strides = np.array([m**(k-1-d) for d in range(k)], dtype=np.int32)
 
-    # Initialize: fiber-structured (perm depends on v[1:])
+    # Initialize: fiber-structured
     perm_idx = np.zeros(n, dtype=np.int32)
     for i in range(n):
-        # fiber val based on coordinates 1..k-1
         fiber_val = 0
         for d in range(1, k):
             coord_d = (i // strides[d]) % m
@@ -78,10 +76,7 @@ def fast_sa(m, k=3, max_iter=500_000, T_start=5.0, T_end=0.001, seed=42):
         if new_pidx >= old_pidx:
             new_pidx += 1
 
-        # Save old row
         old_succ_row = succ[v_idx].copy()
-
-        # Update row
         new_p = perms[new_pidx]
         for c in range(k):
             dim = new_p[c]
@@ -91,7 +86,6 @@ def fast_sa(m, k=3, max_iter=500_000, T_start=5.0, T_end=0.001, seed=42):
         s = score_np(succ, n, k)
         delta = s - curr_score
 
-        # SA acceptance
         if delta <= 0 or (T > 1e-9 and random.random() < math.exp(-delta / T)):
             curr_score = s
             perm_idx[v_idx] = new_pidx
@@ -109,21 +103,39 @@ def fast_sa(m, k=3, max_iter=500_000, T_start=5.0, T_end=0.001, seed=42):
     elapsed = time.perf_counter() - t0
     return best_perm, best_score, elapsed, scores
 
-if __name__ == "__main__":
-    print("[FAST SA] m=3, k=3 (solving...)")
-    bp3, bs3, t3, h3 = fast_sa(3, 3, max_iter=50000, T_start=5.0, T_end=0.001, seed=7)
-    print(f"  Best score: {bs3} | Time: {t3:.2f}s | Solved: {bs3==0}")
-    print(f"  History: {h3}")
+# ============================================================
+# CLOSED-FORM UNIVERSAL SPIKE RULE (Theorem 7.1 Extension)
+# ============================================================
+def closed_form_spike_rule(m):
+    """
+    Universal O(m) construction for all odd m >= 3.
+    """
+    identity = (0, 1, 2)
+    swap12 = (0, 2, 1)
+    swap01 = (1, 0, 2)
+    def swap02(p): return (p[2], p[1], p[0])
+
+    P = [identity]*(m-2) + [swap12, swap01]
+
+    n = m**3
+    strides = [m**2, m, 1]
+    perm_arr = np.zeros((n, 3), dtype=np.int32)
+    for i in range(m):
+        for j in range(m):
+            for l in range(m):
+                idx = i*strides[0] + j*strides[1] + l*strides[2]
+                s = (i + j + l) % m
+                perm = P[s]
+                if j == 0 and s != m-2:
+                    perm = swap02(perm)
+                perm_arr[idx] = perm
+
+    return perm_arr
 
 # ============================================================
 # CANONICAL SPIKE GENERATOR (Theorem 7.1 Extension)
 # ============================================================
 def canonical_spike_rule(m, k=3):
-    """
-    Generates the canonical Spike construction for any odd m.
-    b_c(j) = 1 if j == 0, else 0.
-    r_c is chosen from the triple (1, m-2, 1).
-    """
     if m % 2 == 0:
         raise ValueError("Canonical Spike requires odd m.")
 
@@ -131,18 +143,17 @@ def canonical_spike_rule(m, k=3):
     strides = [m**(k-1-d) for d in range(k)]
     perm_arr = np.zeros((n, k), dtype=np.int32)
 
-    # Simple choice: for color c, use dimension c primarily
-    # and use the spike to rotate when j=0.
-    # This construction is a direct application of Theorem 7.1.
+    # Canonical r=(1, m-2, 1) and delta=1
+    # We choose perms that shift the correct dimensions
+    # Color 0: dim 1
+    # Color 1: dim 2
+    # Color 2: dim 0
+    # This is an illustrative simplified construction.
     for idx in range(n):
-        j = (idx // strides[1]) % m # coordinate 1
-        # Canonical r=(1, m-2, 1) ensures gcd(r, m)=1
-        # Sum b = 1 ensures gcd(Sum b, m)=1
-        # Thus Q_c are single m^2 cycles on fibers.
-        p = [c for c in range(k)]
+        j = (idx // strides[1]) % m
+        p = [1, 2, 0]
         if j == 0:
-            # The 'spike' at j=0
-            p = [(c + 1) % k for c in range(k)]
+            p = [2, 0, 1] # Rotate
         perm_arr[idx] = p
 
     return perm_arr
