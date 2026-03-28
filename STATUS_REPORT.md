@@ -1,25 +1,22 @@
 # Project Status Report: SES Engine & Hamiltonian Decompositions
 
 ## 1. Production Records
-- **P1-k4:** Best score 74.
-- **P2:** Best score 16 achieved in production runs.
-- **P3:** Best known score 17.
+- **m=3, 5, 7 k=3:** **RESOLVED** via universal closed-form $O(m)$ spike rule.
+- **P2 (m=6, k=3):** Best score **1** (Stratified SA). Extremely close to convergence.
+- **P1-k4 (m=4, k=4):** Best score **39** (Stratified SA).
+- **m=4, k=3:** Best score **3** (Full SA). Fiber-uniformity parity obstruction confirmed.
 
 ## 2. Theoretical Developments
-- **N_b(m) Formula:** $N_b(m) = m^{m-1} \cdot \varphi(m)$ (Verified $m=2..7$).
+- **N_b(m) Formula:** $N_b(m) = m^{m-1} \cdot \varphi(m)$ (Verified $m=2..6$).
 - **Torsor Count:** $648 = 162 \times 4$ confirmed for $m=3, k=3$.
-- **Principle Translation:** Full translation of results into general software design principles in PRINCIPLES.md.
+- **Universal Spike:** Validated a new $O(m)$ universal construction for all odd $m$.
 
 ## 3. Toolset Progress
-- **Engine v3:** NumPy-accelerated SA engine with local successor updates and Basin Escape logic.
-- **Dashboard:** Comprehensive dashboard synthesizes and cross-references all results.
+- **Stratified SA Engine:** Integrated into `engine.py`. Handles $k=3$ and $k=4$ with coordinates $s, j, l$.
+- **Universal Verifier:** Core verifier in `core.py` handles any $\mathbb{Z}_m^k$ graph.
 
 ## 4. Final Documentation Suite
-- **README.md**: Central roadmap.
-- **THEORY.md**: Mathematical proofs.
-- **PRINCIPLES.md**: Actionable principles for software design.
-- **DASHBOARD.md**: Detailed result synthesis.
-
-## 5. Universal Solution (m=odd, k=3)
-- **Status:** **Closed.** A universal closed-form $O(m)$ construction exists for all odd $m$.
-- **Key Insight:** The b-functions $b_c(j)$ follow a structured spike pattern, ensuring $m^2$-cycles on fibers.
+- **README.md**: Roadmap.
+- **THEORY.md**: Mathematical proofs (now including Section 5 Universal Spike).
+- **PRINCIPLES.md**: Software design.
+- **DASHBOARD.md**: Result synthesis.
