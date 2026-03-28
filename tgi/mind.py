@@ -2,6 +2,7 @@ from .core import CognitiveManifold
 from .deduction import O1InferenceEngine
 from .verification import TruthOracle
 from .grounding import KnowledgeGrounding
+from .kernel import TGICognitiveKernel
 
 class SymbolicMapper:
     """
@@ -34,6 +35,11 @@ class TopologicalGeneralIntelligence:
         self.m = m
         self.k = k
         self.manifold = CognitiveManifold(m, k)
+        self.kernel = TGICognitiveKernel(k, m)
+
+        # Core 1: Parity Truth Evaluation
+        self.valid, self.parity_msg = self.kernel.core_1_parity_truth_evaluator()
+
         try:
             self.engine = O1InferenceEngine(m, k)
             self.obstructed = False
@@ -41,6 +47,7 @@ class TopologicalGeneralIntelligence:
             self.engine = None
             self.obstructed = True
             self.obstruction_msg = str(e)
+
         self.oracle = TruthOracle(m, k)
         self.mapper = SymbolicMapper(m, k)
         self.grounding = KnowledgeGrounding(token=hf_token)
@@ -62,12 +69,18 @@ class TopologicalGeneralIntelligence:
             print(f"\n[TGI MIND] Processing Hypothesis: Z_{self.m}^{self.k}")
             concept_name = self.mapper.get_concept(premise_coord)
             print(f" - Initial Premise: {concept_name} {premise_coord}")
+            print(f" - [Kernel] {self.parity_msg}")
+
+        # Kernel Diagnostic: Core 2 Axiom Projection
+        n_b, _ = self.kernel.core_2_axiom_quotient_projector()
+        if verbose:
+            print(f" - [Kernel] Absolute Solution Density: {n_b}")
 
         # 1. Deductive Reasoning (O(1) Jumps)
-        if self.obstructed:
+        if self.obstructed or not self.valid:
             report = {
                 "status": "PARADOX_DETECTED",
-                "proof": self.obstruction_msg,
+                "proof": self.parity_msg if not self.valid else self.obstruction_msg,
                 "valid": False
             }
             chain = [premise_coord]
