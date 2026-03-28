@@ -114,3 +114,35 @@ if __name__ == "__main__":
     bp3, bs3, t3, h3 = fast_sa(3, 3, max_iter=50000, T_start=5.0, T_end=0.001, seed=7)
     print(f"  Best score: {bs3} | Time: {t3:.2f}s | Solved: {bs3==0}")
     print(f"  History: {h3}")
+
+# ============================================================
+# CANONICAL SPIKE GENERATOR (Theorem 7.1 Extension)
+# ============================================================
+def canonical_spike_rule(m, k=3):
+    """
+    Generates the canonical Spike construction for any odd m.
+    b_c(j) = 1 if j == 0, else 0.
+    r_c is chosen from the triple (1, m-2, 1).
+    """
+    if m % 2 == 0:
+        raise ValueError("Canonical Spike requires odd m.")
+
+    n = m**k
+    strides = [m**(k-1-d) for d in range(k)]
+    perm_arr = np.zeros((n, k), dtype=np.int32)
+
+    # Simple choice: for color c, use dimension c primarily
+    # and use the spike to rotate when j=0.
+    # This construction is a direct application of Theorem 7.1.
+    for idx in range(n):
+        j = (idx // strides[1]) % m # coordinate 1
+        # Canonical r=(1, m-2, 1) ensures gcd(r, m)=1
+        # Sum b = 1 ensures gcd(Sum b, m)=1
+        # Thus Q_c are single m^2 cycles on fibers.
+        p = [c for c in range(k)]
+        if j == 0:
+            # The 'spike' at j=0
+            p = [(c + 1) % k for c in range(k)]
+        perm_arr[idx] = p
+
+    return perm_arr

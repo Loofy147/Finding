@@ -43,3 +43,10 @@ This document translates the mathematical results of the SES Framework into gene
 - **Programming Application:**
     - **Refactoring:** When single-file changes stall, a coordinated two-file refactoring may be required to reach a better design state.
     - **Database Indexing:** Adding two specific indexes together may cover a query pattern that neither covers alone (Depth-2 barrier).
+
+## 7. The Canonical Spike (Theorem 7.1 Extension)
+- **Mathematical Result:** For any odd $m$, $b(j) = \delta \cdot [j=j_0]$ with $\gcd(\delta, m)=1$ and $\gcd(r, m)=1$ always yields single $m^2$-cycles.
+- **General Principle:** A minimal "perturbation" (spike) in a periodic process is sufficient to break sub-cycles and ensure full ergodicity, provided the perturbation itself is coprime to the cycle length.
+- **Programming Application:**
+    - **Resource Allocation:** In a distributed system with $m$ resources, adding a single "special case" node that slightly rotates its priority list can prevent deadlock cycles and ensure fair resource distribution.
+    - **Data Sharding:** A sharding function that uses a simple hash but adds a small offset at specific input thresholds can prevent "hot spotting" by forcing a full traversal of the shard space.

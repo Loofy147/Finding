@@ -27,3 +27,16 @@ Total: $162 \times 2 \times 2 = 648$.
 For $k$ colors, the base-shift balance condition is:
 $$\sum_{c=0}^{k-1} r_c \equiv 0 \pmod m$$
 This ensures the combined action over all dimensions is balanced, preventing premature cycle closure.
+
+## 4. Canonical Spike and Single m²-Cycles (Theorem 7.1)
+The construction $Q_c(i,j) = (i + b_c(j), j + r_c) \pmod m$ is a single $m^2$-cycle on $\mathbb{Z}_m \times \mathbb{Z}_m$ if:
+- $\gcd(r_c, m) = 1$
+- $\gcd(\sum b_c, m) = 1$
+
+### Proof of the Canonical Spike:
+For the canonical choice $b_c(j) = \delta$ if $j=j_0$, else $0$:
+1. $\sum b_c = (m-1) \cdot 0 + 1 \cdot \delta = \delta$.
+2. The condition $\gcd(\sum b_c, m) = 1$ becomes $\gcd(\delta, m) = 1$.
+3. For any odd $m$, $\delta = 1$ always works.
+4. The canonical $r$-triple $(1, m-2, 1)$ satisfies $\gcd(r_c, m) = 1$ for all odd $m$.
+5. Thus, the construction always produces a single $m^2$-cycle.
